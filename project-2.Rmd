@@ -19,7 +19,7 @@ library(memisc)
 
 setwd('/Users/eric/Desktop')
 redwine <- read.csv('wineQualityReds.csv')
-rw <- redwine[,c(2,3,4,5,6,7,8,9,10,11,12,13)]
+rw <- redwine[ , !names(redwine) %in% c("X")]
 
 ```
 
@@ -49,7 +49,10 @@ Now let's plots some histograms and look at the distributions of some of these v
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE }
 
-ggplot(aes(x = residual.sugar), data= redwine) + geom_histogram(binwidth = 0.20)
+ggplot(aes(x = residual.sugar), data= redwine) + 
+  geom_histogram(binwidth = 0.20) +
+  # remove some of the outliers outside of the 95% percentile to better show distribution
+  scale_x_continuous(limits = quantile(redwine$residual.sugar, c(0, 0.95)))
 
 ```
 
@@ -69,7 +72,9 @@ Most wines have a sweetness of less than 3g/dm^3, a median of 2.2 and a mean of 
 ```{r echo = FALSE, warning = FALSE, message = FALSE}
 
 
-ggplot(aes(x = alcohol), data= redwine) + geom_histogram(binwidth = 0.10)
+ggplot(aes(x = alcohol), data= redwine) + 
+  geom_histogram(binwidth = 0.10) +
+  scale_x_continuous(breaks = seq(0, 20, 1))
 
 
 ```
@@ -152,7 +157,7 @@ Most wines have between 6 and 11 g/dm^3 of fixed acidity (tartaric acid), with a
 
 ggplot(aes(x = volatile.acidity), data = redwine) + 
   geom_histogram(binwidth = 0.020) +
-  scale_x_continuous(breaks = seq(0, 5, 0.10)) +
+  scale_x_continuous(breaks = seq(0, 5, 0.10), limits = quantile(redwine$volatile.acidity, c(0, 0.95))) +
   scale_y_continuous(breaks = seq(0, 1000, 10))
 
 
@@ -176,7 +181,7 @@ The volatile acidity (acetic acid) distribution looks like it could be bimodal, 
 
 ggplot(aes(x = citric.acid), data = redwine) + 
   geom_histogram(binwidth = 0.01) +
-  scale_x_continuous(breaks = seq(0, 2, 0.1)) +
+  scale_x_continuous(breaks = seq(0, 2, 0.1), limits = quantile(redwine$citric.acid, c(0, 0.95))) +
   scale_y_continuous(breaks = seq(0, 500, 10))
 
 
@@ -200,7 +205,7 @@ Most wines have citric acid of less than 0.6 g/dm^3. The most common citric acid
 
 ggplot(aes(x = free.sulfur.dioxide), data = redwine) + 
   geom_histogram(binwidth = 1) +
-  scale_x_continuous(breaks = seq(0, 100, 5)) +
+  scale_x_continuous(breaks = seq(0, 100, 5), limits = quantile(redwine$free.sulfur.dioxide, c(0, 0.95))) +
   scale_y_continuous(breaks = seq(0, 500, 10))
 
 
@@ -224,7 +229,7 @@ Most wines have less than 35 mg/dm^3 free sulfur dioxide content. The median is 
 
 ggplot(aes(x = total.sulfur.dioxide), data = redwine) + 
   geom_histogram(binwidth = 3) +
-  scale_x_continuous(breaks = seq(0, 1000, 25)) +
+  scale_x_continuous(breaks = seq(0, 1000, 10), limits = quantile(redwine$total.sulfur.dioxide, c(0, 0.95))) +
   scale_y_continuous(breaks = seq(0, 500, 10))
 
 
@@ -272,7 +277,7 @@ The pH of the red wines appears to be distributed normally. The median is 3.31 a
 
 ggplot(aes(x = density), data = redwine) + 
   geom_histogram(binwidth = 0.0006) +
-  scale_x_continuous(breaks = seq(0.0, 1.0, 0.25)) +
+  scale_x_continuous(breaks = seq(0.0, 2.0, 0.001)) +
   scale_y_continuous(breaks = seq(0, 1000, 50))
 
 
@@ -296,7 +301,7 @@ The density of wine is distributed normally. The median is 0.99 and the mean is 
 
 ggplot(aes(x = sulphates), data = redwine) + 
   geom_histogram(binwidth = 0.025) +
-  scale_x_continuous(breaks = seq(0.0, 10.0, 0.25)) +
+  scale_x_continuous(breaks = seq(0.0, 10.0, 0.1), limits = quantile(redwine$sulphates, c(0, 0.95))) +
   scale_y_continuous(breaks = seq(0, 1000, 25))
 
 
@@ -319,7 +324,7 @@ Most wines have sulphates between 0.4 and 0.8. The median is 0.62 and the mean i
 
 ggplot(aes(x = chlorides), data = redwine) + 
   geom_histogram(binwidth = 0.005) +
-  scale_x_continuous(breaks = seq(0.0, 1.0, 0.05)) +
+  scale_x_continuous(breaks = seq(0.0, 1.0, 0.01), limits = quantile(redwine$chlorides, c(0, 0.95))) +
   scale_y_continuous(breaks = seq(0, 2000, 50))
 
 ```
@@ -420,7 +425,7 @@ Let's do some bivariate plotting and analysis to further explore the distributio
 
 
 ggplot(aes(x = citric.acid, y = fixed.acidity), data = redwine) + 
-  geom_point() +
+  geom_point(position = "jitter", alpha = 0.25) +
   scale_x_continuous(breaks = seq(0.0, 1.0, 0.1)) +
   scale_y_continuous(breaks = seq(0.0, 20.0, 1))
 
@@ -435,8 +440,8 @@ Easy to see the moderate correlation (0.67) between fixed acidity and citric aci
 
 
 ggplot(aes(x = density, y = fixed.acidity), data = redwine) + 
-  geom_point() +
-  scale_x_continuous(breaks = seq(0.0, 2.0, 0.1)) +
+  geom_point(position = "jitter", alpha = 0.25) +
+  scale_x_continuous(breaks = seq(0.0, 2.0, 0.001)) +
   scale_y_continuous(breaks = seq(0, 20.0, 1))
 
 
@@ -450,7 +455,7 @@ It's clear to see the moderate correlation (0.66) between fixed acidity and dens
 
 
 ggplot(aes(x = total.sulfur.dioxide, y = free.sulfur.dioxide), data = redwine) + 
-  geom_point() +
+  geom_point(position = "jitter", alpha = 0.20) +
   scale_x_continuous(breaks = seq(0, 500, 25)) +
   scale_y_continuous(breaks = seq(0, 200, 25))
 
@@ -466,7 +471,7 @@ Interesting pattern here, moderate correlation (0.66) with variance increasing a
 
 
 ggplot(aes(x = citric.acid, y = pH), data = redwine) + 
-  geom_point() +
+  geom_point(position = "jitter", alpha = 0.25) +
   scale_x_continuous(breaks = seq(0.0, 1.0, .1)) +
   scale_y_continuous(breaks = seq(0, 20, 0.5))
 
@@ -481,7 +486,7 @@ Negative moderate correlation (-0.54) between citric acid and pH
 
 
 ggplot(aes(x = citric.acid, y = volatile.acidity), data = redwine) + 
-  geom_point() +
+  geom_point(position = "jitter", alpha = 0.25) +
   scale_x_continuous(breaks = seq(0.0, 1.0, 0.1)) +
   scale_y_continuous(breaks = seq(0, 20, 0.10))
 
@@ -496,7 +501,7 @@ Here we see the pattern and negative correlation (-0.55) between citric acid and
 
 
 ggplot(aes(x = fixed.acidity, y = pH), data = redwine) + 
-  geom_point() +
+  geom_point(position = "jitter", alpha = 0.25) +
   scale_x_continuous(breaks = seq(0.0, 20, 1)) +
   scale_y_continuous(breaks = seq(0, 20, 0.5))
 
@@ -511,7 +516,7 @@ Clear negative correlation (-0.68) between fixed acidity and pH.
 
 
 ggplot(aes(x = quality, y = alcohol), data = redwine) + 
-  geom_point() +
+  geom_point(position = "jitter", alpha = 0.25) +
   scale_x_continuous(breaks = seq(0, 20, 1)) +
   scale_y_continuous(breaks = seq(0, 120, 1))
 
@@ -557,6 +562,7 @@ Citric acid seems to have an impact on quality, with higher quality wines having
 
 ggplot(aes(x = factor(quality), y = sulphates), data = redwine) + 
   geom_boxplot() +
+  scale_y_continuous(limits = quantile(redwine$sulphates, c(0, 0.95))) +
   # show an 'x' to represent the mean
   stat_summary(fun.y=mean, geom="point", 
                shape="x", size=3, show_guide = FALSE)
@@ -606,6 +612,7 @@ The greater the volatile acidity, the lower the wine quality is according to thi
 
 ggplot(aes(x = factor(quality), y = total.sulfur.dioxide), data = redwine) + 
   geom_boxplot() +
+  scale_y_continuous(limits = quantile(redwine$total.sulfur.dioxide, c(0, 0.95))) +
   # show an 'x' to represent the mean
   stat_summary(fun.y=mean, geom="point", 
                shape="x", size=3, show_guide = FALSE)
@@ -658,10 +665,12 @@ Out of the above factors the most interesting relationship is that between citri
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, Multivariate_Plots}
 
-ggplot(aes(x = citric.acid, y = volatile.acidity, color = quality), data = redwine) + 
-  geom_point() +
+ggplot(aes(x = citric.acid, y = volatile.acidity, color = factor(quality)), data = redwine) + 
+  geom_point(position = "jitter", alpha = 0.5) +
   scale_x_continuous(breaks = seq(0.0, 2.0, 0.1)) +
-  scale_y_continuous(breaks = seq(0, 2.0, 0.1))
+  scale_y_continuous(breaks = seq(0, 2.0, 0.1)) +
+  scale_colour_brewer(palette = "RdYlGn") +
+  theme_dark()
 
 
 ```
@@ -673,10 +682,12 @@ It seems most of the higher quality wines (quality >= 0.6) are concentrated in t
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 
 
-ggplot(aes(x = citric.acid, y = alcohol, color = quality), data = redwine) + 
-  geom_point() +
+ggplot(aes(x = citric.acid, y = alcohol, color = factor(quality)), data = redwine) + 
+  geom_point(position = "jitter", alpha = 0.5) +
   scale_x_continuous(breaks = seq(0.0, 2.0, 0.1)) +
-  scale_y_continuous(breaks = seq(0, 20, 1))
+  scale_y_continuous(breaks = seq(0, 20, 1)) +
+  scale_colour_brewer(palette = "RdYlGn") +
+  theme_dark()
 
 
 ```
@@ -687,11 +698,12 @@ In this plot most of the higher quality wines (quality >= 0.6) are in the upper 
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 
-
-ggplot(aes(x = density, y = alcohol, color = quality), data = redwine) + 
-  geom_point() +
-  scale_x_continuous(breaks = seq(0, 2.0, 0.1)) +
-  scale_y_continuous(breaks = seq(0, 20, 1))
+ggplot(aes(x = density, y = alcohol, color = factor(quality)), data = redwine) + 
+  geom_point(position = "jitter", alpha = 0.5) +
+  scale_x_continuous(breaks = seq(0, 20, 0.0025)) +
+  scale_y_continuous(breaks = seq(0, 20, 1)) +
+  scale_colour_brewer(palette = "RdYlGn") +
+  theme_dark()
 
 
 ```
@@ -702,10 +714,12 @@ In this plot we can see that most of the higher quality wines (quality >= 0.6) a
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 
 
-ggplot(aes(x = sulphates, y = citric.acid, color = quality), data = redwine) + 
-  geom_point() +
+ggplot(aes(x = sulphates, y = citric.acid, color = factor(quality)), data = redwine) + 
+  geom_point(position = "jitter", alpha = 0.5) +
   scale_x_continuous(breaks = seq(0.0, 2.0, 0.1)) +
-  scale_y_continuous(breaks = seq(0, 2.0, 0.1))
+  scale_y_continuous(breaks = seq(0, 2.0, 0.1)) +
+  scale_colour_brewer(palette = "RdYlGn") +
+  theme_dark()
 
 
 ```
@@ -734,13 +748,16 @@ Finally we plotted sulphates, citric acid, and quality. The pattern here is more
 ### Plot One
 ```{r echo=FALSE, Plot_One}
 
-ggplot(aes(x = citric.acid, y = volatile.acidity, color = quality), data = redwine) + 
-  geom_point() +
+ggplot(aes(x = citric.acid, y = volatile.acidity, color =factor(quality)), data = redwine) + 
+  geom_point(position = "jitter", alpha = 0.5, size = 2) +
   scale_x_continuous(breaks = seq(0.0, 2.0, 0.1)) +
   scale_y_continuous(breaks = seq(0, 2.0, 0.1)) +
   xlab("Citric Acid (g / dm^3)") + 
   ylab("Volatile Acidity (g / dm^3)") +
-  labs(color='Quality') 
+  labs(color='Quality') +
+  ggtitle("Quality by Citric Acid and Volatile Acidity") +
+  scale_colour_brewer(palette = "RdYlGn") +
+  theme_dark()
 
 ```
 
@@ -751,13 +768,16 @@ The majority of wines with a quality of >= 6 appear to be concentrated toward th
 ```{r echo=FALSE, Plot_Two}
 
 
-ggplot(aes(x = citric.acid, y = alcohol, color = quality), data = redwine) + 
-  geom_point(size = 2) +
+ggplot(aes(x = citric.acid, y = alcohol, color = factor(quality)), data = redwine) + 
+  geom_point(size = 2, position = "jitter", alpha = 0.5) +
   scale_x_continuous(breaks = seq(0.0, 2.0, 0.1)) +
   scale_y_continuous(breaks = seq(0, 20, 0.5)) +
   xlab("Citric Acid (g / dm^3)") + 
   ylab("Alcohol (%)") +
-  labs(color='Quality') 
+  labs(color='Quality') +
+  ggtitle("Quality by Alcohol and Citric Acid") +
+  scale_colour_brewer(palette = "RdYlGn") +
+  theme_dark()
 
 
 ```
@@ -769,13 +789,16 @@ In this plot wines with a quality >= 6 appear to be concentrated in the top righ
 ```{r echo=FALSE, Plot_Three}
 
 
-ggplot(aes(x = density, y = alcohol, color = quality), data = redwine) + 
-  geom_point(size = 2) +
-  scale_x_continuous(breaks = seq(0, 2.0, 0.1)) +
+ggplot(aes(x = density, y = alcohol, color = factor(quality)), data = redwine) + 
+  geom_point(size = 2, position = "jitter", alpha = 0.5) +
+  scale_x_continuous(breaks = seq(0, 2.0, 0.0025)) +
   scale_y_continuous(breaks = seq(0, 20, 1)) +
   xlab("Density (g / cm^3)") + 
   ylab("Alcohol (%)") +
-  labs(color='Quality')
+  labs(color='Quality') +
+  ggtitle("Quality by Density and Alcohol") +
+  scale_colour_brewer(palette = "RdYlGn") +
+  theme_dark()
 
 ```
 
@@ -785,7 +808,7 @@ Wines with a quality of >= 6 are located mostly in the upper left portion of the
 
 # Reflection
 
-We plotted and explored the input variables in this dataset to discover how they contributed to the output variable of quality. The main finding was that quality was affected by different variables to varying degrees. Citric acid correlated positively with quality, possibly having an inhibitory effect on spoilage or confering desirable flavor qualities. Alcohol also correlated positively with quality, with moderate to high percentage wines being rated the highest. Sulphates contributed a weak correlation with quality, possibly by helping to prevent spoilage. Density was also a factor, with people mostly preferring less dense wines. The main difficulty in this exploration was identifying exactly how each variable contributed to quality, their combined contribution being difficult to deconstruct. 
+We plotted and explored the input variables in this dataset to discover how they contributed to the output variable of quality. The main finding was that quality is influenced by different variables to varying degrees. Citric acid correlated positively with quality, possibly having an inhibitory effect on spoilage or confering desirable flavor qualities. Alcohol also correlated positively with quality, with moderate to high percentage wines being rated the highest. Sulphates contributed a weak correlation with quality, possibly by helping to prevent spoilage. Density was also a factor, with people mostly preferring less dense wines. The main difficulty in this exploration was identifying exactly how each variable contributed to quality, their combined contribution being difficult to deconstruct. One question is why might a higher alcohol content be correlated with quality? 
 
 
 # Cited Materials
